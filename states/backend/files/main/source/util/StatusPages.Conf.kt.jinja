@@ -1,0 +1,20 @@
+package {{ packageId }}.{{ projectName }}.util
+
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.client.features.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.sessions.*
+import io.ktor.util.*
+
+fun StatusPages.Configuration.configureStatusPages() {
+    exception<NotImplementedError> { call.respond(HttpStatusCode.NotImplemented) }
+    exception<BadResponseStatusException> {
+        call.response.status(it.statusCode)
+        when (it.statusCode.value) {
+            HttpStatusCode.Unauthorized.value -> call.respondText("Login failed")
+        }
+    }
+}

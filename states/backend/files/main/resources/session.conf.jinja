@@ -1,0 +1,5 @@
+{% from 'backend/files/main/lib.sls' import iterateSettingsFlat with context %}
+
+session {
+{{ iterateSettingsFlat(pillar.modules.backend.config.session) }}
+}

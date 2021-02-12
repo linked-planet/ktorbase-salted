@@ -1,0 +1,26 @@
+package {{ packageId }}.{{ projectName }}.util
+
+import {{ packageId }}.{{ projectName }}.routes.session
+import {{ packageId }}.{{ projectName }}.service.SessionService
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.client.features.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.sessions.*
+import io.ktor.util.*
+
+fun Authentication.Configuration.configureAuthentication() {
+    {% if pillar.modules.backend.ktor.server.features.sessions.selected %}
+    session<Session> {
+        validate {
+            val session = it
+            SessionService.validateSessionExpiration(it)
+                ?.let { UserIdPrincipal(it.username) }
+        }
+        challenge = SessionAuthChallenge.Unauthorized
+    }
+    {%- endif -%}
+}
+

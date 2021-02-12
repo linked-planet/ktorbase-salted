@@ -1,4 +1,4 @@
-# link-time ktor base
+# link-time ktor base salted
 [![Build Status](https://travis-ci.com/link-time/ktorbase.svg?branch=master)](https://travis-ci.com/link-time/ktorbase)
 [![GitHub License](https://img.shields.io/badge/license-CC0%201.0%20Universal-blue.svg?style=flat)](https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 

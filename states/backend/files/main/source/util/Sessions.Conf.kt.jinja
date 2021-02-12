@@ -1,0 +1,21 @@
+package {{ packageId }}.{{ projectName }}.util
+
+import {{ packageId }}.{{ projectName }}.routes.session
+import {{ packageId }}.{{ projectName }}.service.SessionService
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.client.features.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.sessions.*
+import io.ktor.util.*
+
+fun Sessions.Configuration.configureSessions() {
+    val appConfig = ConfigFactory.load().getConfig("ktor.application")
+    val secretHashKey = hex(appConfig.getString("secret"))
+    cookie<Session>("SESSION") {
+        cookie.path = "/"
+        transform(SessionTransportTransformerMessageAuthentication(secretHashKey))
+    }
+}

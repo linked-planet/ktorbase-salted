@@ -1,0 +1,72 @@
+{%- set features = pillar.modules.backend.ktor.server.features -%}
+package {{ packageId }}.{{ projectName }}
+
+import {{ packageId }}.{{ projectName }}.routes.*
+import {{ packageId }}.{{ projectName }}.util.*
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.selectedfeatures.*
+import io.ktor.http.content.*
+import io.ktor.locations.*
+import io.ktor.routing.*
+import io.ktor.sessions.*
+import io.ktor.util.*
+
+@KtorExperimentalAPI
+@KtorExperimentalLocationsAPI
+fun Application.main() {
+{% if features.defaultheaders.selected %}
+    install(DefaultHeaders)
+{%- endif %}
+{% if features.calllogging.selected %}
+    install(CallLogging)
+{%- endif %}
+{% if features.conditionalheaders.selected %}
+    install(ConditionalHeaders)
+{%- endif %}
+{% if features.compression.selected %}
+    install(Compression)
+{%- endif %}
+{% if features.locations.selected %}
+    install(Locations)
+{%- endif %}
+{% if features.xforwardedheadersupport.selected %}
+    install(XForwardedHeaderSupport)
+{%- endif %}
+{% if features.statuspages.selected %}
+    install(StatusPages) {
+        configureStatusPages()
+    }
+{%- endif %}
+{% if features.sessions.selected %}
+    install(Sessions) {
+        configureSessions()
+    }
+{%- endif %}
+{% if features.authentication.selected %}
+    install(Authentication) {
+        configureAuthentication()
+    }
+{%- endif %}
+{% if features.contentnegotiation.selected %}
+    install(ContentNegotiation) {
+        configureContentNegotation()
+    }
+{%- endif %}
+
+    routing {
+{% if pillar.modules.frontend.use %}
+        static("frontend") {
+            files("frontend")
+        }
+{%- endif %}
+        health()
+{% if features.sessions.selected %}
+        session()
+{%- endif %}
+        index()
+{% if features.saml.selected %}
+        saml()
+{%- endif %}
+    }
+}

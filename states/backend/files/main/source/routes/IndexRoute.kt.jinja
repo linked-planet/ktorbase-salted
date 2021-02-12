@@ -1,0 +1,66 @@
+package {{ packageId }}.{{ projectName }}.routes
+
+import com.linktime.ktor.withSAMLAuth
+import {{ packageId }}.{{ projectName }}.model.Session
+import {{ packageId }}.{{ projectName }}.service.SessionService
+import io.ktor.application.call
+import io.ktor.html.Placeholder
+import io.ktor.html.Template
+import io.ktor.html.insert
+import io.ktor.html.respondHtmlTemplate
+import io.ktor.http.ContentType
+import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.locations.Location
+import io.ktor.locations.get
+import io.ktor.routing.Route
+import io.ktor.sessions.get
+import io.ktor.sessions.sessions
+import io.ktor.util.InternalAPI
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.html.*
+
+@KtorExperimentalLocationsAPI
+@Location("/")
+data class Index(val auth_fallback: Boolean = false)
+
+@UseExperimental(InternalAPI::class)
+@KtorExperimentalLocationsAPI
+fun Route.index() {
+    get<Index> { location ->
+    {% if pillar.modules.backend.ktor.server.features.sessions.selected %}
+        val session = call.sessions.get<Session>()
+        {% if pillar.modules.backend.ktor.server.features.saml.selected %}
+        val ssoEnabled = {{ packageId }}.{{ projectName }}.AppConfig.ssoSaml && !location.auth_fallback
+
+        if (SessionService.validateSessionExpiration(session) == null && ssoEnabled) {
+            withSAMLAuth { withContext(Dispatchers.IO) { it.login() } }
+        } else {
+        {% endif %}
+            call.respondHtmlTemplate(IndexPage()) {
+                caption { +{{ packageId }}.{{ projectName }}.AppConfig.title }
+        {% if pillar.modules.backend.ktor.server.features.saml.selected %}
+            }
+        {% endif %}
+        }
+    {% endif %}
+    }
+}
+
+class IndexPage : Template<HTML> {
+    val caption = Placeholder<TITLE>()
+
+    override fun HTML.apply() {
+        head {
+            meta { charset = "utf-8" }
+            title {
+                insert(caption)
+            }
+            link(href = "frontend/favicon.png", rel = "icon", type = ContentType.Image.PNG.toString()) { }
+        }
+        body(classes = "app-body") {
+            div { id = "content" }
+            script(type = "text/javascript", src = "frontend/frontend.bundle.js", block = {})
+        }
+    }
+}

@@ -1,0 +1,102 @@
+{%- set features = pillar.modules.backend.ktor.server.features -%}
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+val jvmTarget: String by project
+val ktorVersion = "{{ pillar.modules.backend.ktor.version }}"
+
+plugins {
+    kotlin("jvm") version "{{ pillar.kotlin.version }}"
+    application
+{%- if pillar.modules.backend.ktor.server.use -%}
+    id("com.github.johnrengelman.shadow") version "5.1.0"
+{%- endif -%}
+{%- if pillar.modules.test.jmeter.use -%}
+    id("net.foragerr.jmeter") version "1.1.0-4.0"
+{%- endif -%}
+}
+
+{%- if pillar.modules.test.jmeter.use -%}
+val jmeterPlugins by configurations.creating {
+    setTransitive(false)
+}
+{%- endif -%}
+
+
+dependencies {
+    implementation(kotlin("stdlib-jdk8", version = "{{ pillar.kotlin.version }}"))
+    implementation(group = "ch.qos.logback", name = "logback-classic", version = "1.2.3")
+{%- if pillar.modules.backend.ktor.server.use -%}
+    implementation(group = "io.ktor", name = "ktor-server-jetty", version = ktorVersion)
+    {% if features.locations.selected %}
+    implementation(group = "io.ktor", name = "ktor-locations", version = ktorVersion)
+    {%- endif -%}
+    implementation(group = "io.ktor", name = "ktor-html-builder", version = ktorVersion)
+    {% if features.contentnegotiation.selected %}
+    implementation(group = "io.ktor", name = "ktor-gson", version = ktorVersion)
+    {%- endif -%}
+    {%- if features.saml.selected -%}
+    implementation(group = "com.link-time.ktor", name = "ktor-onelogin-saml", version = "1.1.0")
+    {%- endif -%}
+{%- endif -%}
+{%- if pillar.modules.backend.ktor.client.use -%}
+    implementation(group = "io.ktor", name = "ktor-client-apache", version = ktorVersion)
+    implementation(group = "io.ktor", name = "ktor-client-gson", version = ktorVersion)
+    implementation(group = "io.ktor", name = "ktor-client-auth-basic", version = ktorVersion)
+    implementation(group = "io.ktor", name = "ktor-client-logging-jvm", version = ktorVersion)
+{%- endif -%}
+{%- if pillar.modules.frontend.use -%}
+    implementation(project(":common"))
+{%- endif -%}
+{%- if pillar.modules.test.jmeter.use -%}
+    // jmeter plugins to load
+    {%- if pillar.modules.backend.db.postgres.use -%}
+    jmeterPlugins("org.postgresql", "postgresql", "42.2.2")
+    {%- endif -%}
+{%- endif -%}
+}
+
+{%- if pillar.modules.backend.ktor.server.use -%}
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = jvmTarget
+    kotlinOptions.freeCompilerArgs = listOf("-Xuse-experimental=kotlin.Experimental")
+}
+
+application {
+    mainClassName = "io.ktor.server.jetty.EngineMain"
+}
+
+tasks.withType<ShadowJar> {
+    baseName = project.name
+    classifier = "all"
+    // to make gradle work with embedded ktor jetty server
+    // https://stackoverflow.com/questions/48636944/how-to-avoid-a-java-lang-exceptionininitializererror-when-trying-to-run-a-ktor-a/48698984#48698984
+    mergeServiceFiles {
+        setPath("META-INF/services")
+        include("org.eclipse.jetty.http.HttpFieldPreEncoder")
+    }
+}
+{%- endif -%}
+
+{%- if pillar.modules.test.jmeter.use -%}
+val initJmLibsTask = task("initJmLibs", Copy::class) {
+    group = "unzip"
+    from(jmeterPlugins.files)
+    into("build/jmeter/lib/ext")
+}
+
+tasks.build.configure {
+    dependsOn(initJmLibsTask)
+}
+
+jmeter {
+    val env = System.getProperty("env", "local")
+    val userHome = System.getProperty("user.home")
+    val projectName = rootProject.name
+    val envFile = "$userHome/.env/$projectName/$env.env"
+    jmTestFiles = listOf(file("src/test/resources/TemplateTest.jmx"))
+    jmUserProperties = listOf("env=$env", "env_file=$envFile")
+    enableReports = true
+    enableExtendedReports = true
+}
+{%- endif -%}

@@ -1,0 +1,5 @@
+base:
+  '*':
+    - kotlin
+    - settings
+    - modules

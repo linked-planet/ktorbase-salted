@@ -1,0 +1,10 @@
+user: {{ pillar.username }}
+
+grains:
+  username: {{ pillar.username }}
+
+file_client: local
+
+file_roots:
+  base:
+    - {{ pillar.pwd }}

@@ -1,0 +1,10 @@
+package {{ packageId }}.{{ projectName }}
+
+import com.typesafe.config.ConfigFactory
+
+object AppConfig {
+    private val config = ConfigFactory.load().getConfig("app")
+    {% for itemName, item in pillar.modules.backend.config.app.items() %}
+    val {{ itemName }}: {{ item.type }} = config.get{{ item.type }}("{{ itemName }}")
+    {%- endfor %}
+}

@@ -1,0 +1,11 @@
+{% from 'backend/files/main/lib.sls' import iterateSettingsFlat with context %}
+
+saml {
+  identityProvider {
+{{ iterateSettingsFlat(pillar.modules.backend.config.saml.identityProvider) }}
+  }
+
+  serviceProvider {
+{{ iterateSettingsFlat(pillar.modules.backend.config.saml.serviceProvider) }}
+  }
+}
