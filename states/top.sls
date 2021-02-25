@@ -1,9 +1,9 @@
 base:
   '*':
     - backend
-    - common
   'I@modules.frontend.use:true':
     - frontend
+    - common
   'I@modules.aws.use:true':
     - aws
   'I@modules.docker.use:true':
