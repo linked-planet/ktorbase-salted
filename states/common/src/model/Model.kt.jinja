@@ -1,5 +1,8 @@
-package com.linktime.ktorbase.model
+{%- set ktorFeatures = pillar.modules.backend.ktor.server.features -%}
+{%- set gateways = pillar.modules.backend.gateways -%}
+package {{ packageId }}.{{ projectName }}
 
+{% if ktorFeatures.sessions.selected -%}
 // --------------------------------------------------------
 // SESSION
 // --------------------------------------------------------
@@ -8,6 +11,7 @@ data class Session(
     val username: String,
     val expireDate: String
 )
+{%- endif -%}
 
 // --------------------------------------------------------
 // CONFIG
@@ -18,6 +22,7 @@ data class Config(
     val bannerMenuBackgroundColor: String
 )
 
+{% if 'confluence' in gateways -%}
 // --------------------------------------------------------
 // Confluence
 // --------------------------------------------------------
@@ -37,7 +42,8 @@ data class KbSearchResult(
     val titleHighlight: String,
     val excerptHighlight: String
 )
-
+{%- endif -%}
+{% if 'insight' in gateways -%}
 // --------------------------------------------------------
 // Insight
 // --------------------------------------------------------
@@ -53,7 +59,9 @@ data class Service(
     val status: String?
 ) : InsightObject
 
+{%- endif -%}
 
+{% if 'jira' in gateways -%}
 // --------------------------------------------------------
 // JIRA
 // --------------------------------------------------------
@@ -70,3 +78,4 @@ data class TicketData(
     val description: String?,
     val incidentId: String
 )
+{%- endif -%}

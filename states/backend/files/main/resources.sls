@@ -7,7 +7,7 @@
 {%- set sourceMainDir = "{}/backend/src/main/resources".format(basePath) -%}
 {%- set sourcePath = "salt://backend/files/main/resources" -%}
 
-{% from 'backend/files/main/lib.sls' import createOnlyFile with context %}
+{% from 'lib.sls' import createOnlyFile with context %}
 
 resource-directory:
   file.directory:

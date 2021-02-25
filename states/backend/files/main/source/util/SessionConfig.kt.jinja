@@ -10,5 +10,7 @@ class SessionConfig(
         .resolve()
         .getConfig("session")
 ) {
-    val expiration: Duration = config.getDuration("expiration")
+    {% for itemName, item in pillar.modules.backend.config.session.items() %}
+    val {{ itemName }}: {{ item.type }} = config.get{{ item.type }}("{{ itemName }}")
+    {%- endfor %}
 }

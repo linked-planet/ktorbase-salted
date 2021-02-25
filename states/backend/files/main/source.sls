@@ -7,7 +7,7 @@
 {%- set sourceMainDir = "{}/backend/src/main/kotlin/{}/{}".format(basePath, groupPath, pillar.projectName) -%}
 {%- set sourcePath = "salt://backend/files/main/source" -%}
 
-{% from 'backend/files/main/lib.sls' import subDir, createOnlyFile with context %}
+{% from 'lib.sls' import subDir, createOnlyFile with context %}
 
 base-directory:
   file.directory:
